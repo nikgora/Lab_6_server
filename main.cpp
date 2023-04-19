@@ -270,6 +270,7 @@ void ClientHandler(SOCKET ClientSocket) {
     vector<pair<string, string>> users;//all registered users
     string error;//message with error if something went wrong
     bool isError = false;
+    pair<string, string> user;
     string directory = "./"; //current directory
     int iResult;
     do {
@@ -532,7 +533,36 @@ void ClientHandler(SOCKET ClientSocket) {
             //TODO Connect socket with data transfer
 
         } else if (command == "user") {
+            SOCKET DataSocket;
+            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            if (iResult < 0) {
+                error = "recv failed:\n" + WSAGetLastError();
+                isError = true;
+                closesocket(DataSocket);
+            }
+            if (isError) {
+                cout << error << endl;
+                isError = false;
+                continue;
+            }
+            len = stoi(ls);
+            iResult = recv(DataSocket, buffer, len, 0);
+            if (iResult < 0) {
+                error = "recv failed:\n" + WSAGetLastError();
+                isError = true;
+                closesocket(DataSocket);
+            }
+            if (isError) {
+                cout << error << endl;
+                isError = false;
+                continue;
+            }
+
+            clenup(buffer, len);
+            user.second = "";
+            user.first = buffer;
             //TODO Connect socket with data transfer
+            closesocket(DataSocket);
 
         } else if (command == "lcd") {
             //Some Easter eggs
@@ -575,10 +605,73 @@ void ClientHandler(SOCKET ClientSocket) {
 
         } else if (command == "login") {
             //TODO Connect socket with data transfer
+            SOCKET DataSocket;
+            vector<pair<string, string>> users;
+            isError = GetAdmins(users, error);
+            if (isError) {
+                cout << error << endl;
+                isError = false;
+                closesocket(DataSocket);
+                continue;
+            }
+            isError = isUserValid(users, user, error);
+            if (!isError) {
+                error = "Login successful";
+            }
+            iResult = send(DataSocket, to_string(error.length()).c_str(), DEFAULT_BUFLEN, 0);
+            if (iResult < 0) {
+                error = "send failed:\n" + WSAGetLastError();
+                isError = true;
+                closesocket(DataSocket);
+            }
+            if (isError) {
+                cout << error << endl;
+                isError = false;
+                continue;
+            }
+            iResult = send(DataSocket, error.c_str(), error.length(), 0);
+            if (iResult < 0) {
+                error = "send failed:\n" + WSAGetLastError();
+                isError = true;
+                closesocket(DataSocket);
+            }
+            if (isError) {
+                cout << error << endl;
+                isError = false;
+                continue;
+            }
+            closesocket(DataSocket);
 
         } else if (command == "password") {
-            //TODO Connect socket with data transfer
+            SOCKET DataSocket;
+            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            if (iResult < 0) {
+                error = "recv failed:\n" + WSAGetLastError();
+                isError = true;
+                closesocket(DataSocket);
+            }
+            if (isError) {
+                cout << error << endl;
+                isError = false;
+                continue;
+            }
+            len = stoi(ls);
+            iResult = recv(DataSocket, buffer, len, 0);
+            if (iResult < 0) {
+                error = "recv failed:\n" + WSAGetLastError();
+                isError = true;
+                closesocket(DataSocket);
+            }
+            if (isError) {
+                cout << error << endl;
+                isError = false;
+                continue;
+            }
 
+            clenup(buffer, len);
+            user.second = buffer;
+            //TODO Connect socket with data transfer
+            closesocket(DataSocket);
         }
 
 
