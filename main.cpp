@@ -18,9 +18,13 @@ struct addrinfo *result = NULL,
         *ptr = NULL,
         hints;
 
+void clenup(char *recvbuf, int len) {
+    for (int i = len; i< strlen(recvbuf);i++){
+        recvbuf[i]='\000';
+    }
+}
+
 void makeACharArr (vector<string> strings, string& res){
-
-
     for (auto e:strings){
         string str;
         str=e;
@@ -236,7 +240,6 @@ bool Get(SOCKET socket,  const string& name, string & error){
         l+=line+"\n";
         len+=line.length()+1;
     }
-    cout<<l;
     int iResult=send(socket,to_string(len).c_str(),to_string(len).length(),0);
     if (iResult < 0){
         error="recv failed:\n" + WSAGetLastError();
@@ -259,7 +262,9 @@ void ClientHandler(SOCKET ClientSocket){
     string directory="./"; //current directory
     int iResult;
     do {
-        char* ls;
+        char* buffer;
+        int len;
+        char ls[DEFAULT_BUFLEN];
         iResult=recv(ClientSocket,ls,DEFAULT_BUFLEN,0);
         if (iResult < 0){
             error="recv failed:\n" + WSAGetLastError();
@@ -271,8 +276,7 @@ void ClientHandler(SOCKET ClientSocket){
             isError= false;
             continue;
         }
-        int len = stoi(ls);
-        char* buffer;
+        len = stoi(ls);
         iResult=recv(ClientSocket,buffer,len,0);
         if (iResult < 0){
             error="recv failed:\n" + WSAGetLastError();
@@ -284,16 +288,69 @@ void ClientHandler(SOCKET ClientSocket){
             isError= false;
             continue;
         }
+        clenup(buffer,len);
         string command = buffer;
         if (command=="cd"){
+            SOCKET DataSocket;
             //TODO
+
+            iResult=recv(DataSocket,ls,DEFAULT_BUFLEN,0);
+            if (iResult < 0){
+                error="recv failed:\n" + WSAGetLastError();
+                isError= true;
+                closesocket(DataSocket);
+            }
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            len = stoi(ls);
+            iResult=recv(DataSocket,buffer,len,0);
+            if (iResult < 0){
+                error="recv failed:\n" + WSAGetLastError();
+                isError= true;
+                closesocket(DataSocket);
+            }
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            clenup(buffer,len);
+            directory=buffer;
+            closesocket(DataSocket);
         }
         else if(command=="dir"){
+            SOCKET DataSocket;
             vector<string>files;
             string filter;
             string res;
             //TODO
-
+            iResult=recv(DataSocket,ls,DEFAULT_BUFLEN,0);
+            if (iResult < 0){
+                error="recv failed:\n" + WSAGetLastError();
+                isError= true;
+                closesocket(DataSocket);
+            }
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            len = stoi(ls);
+            iResult=recv(DataSocket,buffer,len,0);
+            if (iResult < 0){
+                error="recv failed:\n" + WSAGetLastError();
+                isError= true;
+                closesocket(DataSocket);
+            }
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            filter=buffer;
             isError=Dir(directory,filter,files,error);
             if(isError){
                 cout<<error<<endl;
@@ -301,8 +358,34 @@ void ClientHandler(SOCKET ClientSocket){
                 continue;
             }
             makeACharArr(files,res);
+            iResult=send(DataSocket,to_string(res.length()).c_str(),DEFAULT_BUFLEN,0);
+            if (iResult < 0){
+                error="send failed:\n" + WSAGetLastError();
+                isError= true;
+                closesocket(DataSocket);
+            }
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            iResult=send(DataSocket,res.c_str(),res.length(),0);
+            if (iResult < 0){
+                error="send failed:\n" + WSAGetLastError();
+                isError= true;
+                closesocket(DataSocket);
+            }
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            closesocket(DataSocket);
+
         }
         else if (command=="get"){
+            SOCKET DataSocket;
+
             //TODO
         }
         else if (command=="put"){
