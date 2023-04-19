@@ -29,7 +29,7 @@ void makeACharArr (vector<string> strings, string& res){
         string str;
         str=e;
         res+=str;
-        res+=" ";
+        res+="\n";
     }
     res[res.length()-1]='\000';
 }
@@ -388,7 +388,6 @@ void ClientHandler(SOCKET ClientSocket){
         }
         else if (command=="get"){
             SOCKET DataSocket;
-
             //TODO Connect socket with data transfer
 
         }
@@ -421,11 +420,43 @@ void ClientHandler(SOCKET ClientSocket){
 
         }
         else if (command=="lcd"){
-            //TODO Connect socket with data transfer
-
+            //Some Easter eggs
         }
         else if (command=="pwd"){
+            SOCKET DataSocket;
             //TODO Connect socket with data transfer
+            vector<string>dirs;
+            isError= Pwd(directory,dirs,error);
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            string res;
+            makeACharArr(dirs,res);
+            iResult=send(DataSocket,to_string(res.length()).c_str(),DEFAULT_BUFLEN,0);
+            if (iResult < 0){
+                error="send failed:\n" + WSAGetLastError();
+                isError= true;
+                closesocket(DataSocket);
+            }
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            iResult=send(DataSocket,res.c_str(),res.length(),0);
+            if (iResult < 0){
+                error="send failed:\n" + WSAGetLastError();
+                isError= true;
+                closesocket(DataSocket);
+            }
+            if(isError){
+                cout<<error<<endl;
+                isError= false;
+                continue;
+            }
+            closesocket(DataSocket);
 
         }
         else if (command=="login"){
