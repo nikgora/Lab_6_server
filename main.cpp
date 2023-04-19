@@ -265,6 +265,7 @@ void ClientHandler(SOCKET ClientSocket){
         char* buffer;
         int len;
         char ls[DEFAULT_BUFLEN];
+        bool isBinary=false;
         iResult=recv(ClientSocket,ls,DEFAULT_BUFLEN,0);
         if (iResult < 0){
             error="recv failed:\n" + WSAGetLastError();
@@ -292,7 +293,8 @@ void ClientHandler(SOCKET ClientSocket){
         string command = buffer;
         if (command=="cd"){
             SOCKET DataSocket;
-            //TODO
+            //TODO Connect socket with data transfer
+ 
 
             iResult=recv(DataSocket,ls,DEFAULT_BUFLEN,0);
             if (iResult < 0){
@@ -326,7 +328,8 @@ void ClientHandler(SOCKET ClientSocket){
             vector<string>files;
             string filter;
             string res;
-            //TODO
+            //TODO Connect socket with data transfer
+
             iResult=recv(DataSocket,ls,DEFAULT_BUFLEN,0);
             if (iResult < 0){
                 error="recv failed:\n" + WSAGetLastError();
@@ -386,40 +389,52 @@ void ClientHandler(SOCKET ClientSocket){
         else if (command=="get"){
             SOCKET DataSocket;
 
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="put"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="ascii"){
-            //TODO
+            isBinary=false;
+
         }
         else if (command=="binary"){
-            //TODO
+            isBinary=true;
+
         }
         else if (command=="close"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="open"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="quit"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="user"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="lcd"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="pwd"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="login"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
         else if (command=="password"){
-            //TODO
+            //TODO Connect socket with data transfer
+
         }
 
 
