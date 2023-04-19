@@ -11,7 +11,6 @@
 #define DEFAULT_PORT "12"
 #define DEFAULT_BUFLEN 1024
 
-
 using namespace std;
 
 struct addrinfo *result = NULL,
@@ -265,8 +264,20 @@ bool Get(SOCKET socket, const string &name, string &error) {
     inputFile.close();
     return false;
 }
+SOCKET BindSocket(SOCKET ListenSocket){
+    SOCKET DataSocket= INVALID_SOCKET;
+    // Accept a client socket
+    DataSocket = accept(ListenSocket, NULL, NULL);
+    if (DataSocket == INVALID_SOCKET) {
+        printf("accept failed: %d\n", WSAGetLastError());
+        closesocket(ListenSocket);
+        WSACleanup();
+        return 1;
+    }
 
-void ClientHandler(SOCKET ClientSocket) {
+    return DataSocket;
+}
+void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
     vector<pair<string, string>> users;//all registered users
     string error;//message with error if something went wrong
     bool isError = false;
@@ -304,8 +315,7 @@ void ClientHandler(SOCKET ClientSocket) {
         clenup(buffer, len);
         string command = buffer;
         if (command == "cd") {
-            SOCKET DataSocket;
-            //TODO Connect socket with data transfer
+            SOCKET DataSocket = BindSocket(ListenSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -334,12 +344,10 @@ void ClientHandler(SOCKET ClientSocket) {
             closesocket(DataSocket);
         }
         else if (command == "dir") {
-            SOCKET DataSocket;
+            SOCKET DataSocket = BindSocket(ListenSocket);
             vector<string> files;
             string filter;
             string res;
-            //TODO Connect socket with data transfer
-
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -398,7 +406,7 @@ void ClientHandler(SOCKET ClientSocket) {
 
         }
         else if (command == "put") {
-            SOCKET DataSocket;
+            SOCKET DataSocket  = BindSocket(ListenSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -468,11 +476,10 @@ void ClientHandler(SOCKET ClientSocket) {
                 }
                 closesocket(DataSocket);
             }
-            //TODO Connect socket with data transfer
 
         }
         else if (command == "get") {
-            SOCKET DataSocket;
+            SOCKET DataSocket = BindSocket(ListenSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -519,8 +526,6 @@ void ClientHandler(SOCKET ClientSocket) {
                 closesocket(DataSocket);
             }
 
-            //TODO Connect socket with data transfer
-
         }
         else if (command == "ascii") {
             isBinary = false;
@@ -529,20 +534,8 @@ void ClientHandler(SOCKET ClientSocket) {
         else if (command == "binary") {
             isBinary = true;
         }
-        else if (command == "close") {
-            //TODO Connect socket with data transfer
-
-        }
-        else if (command == "open") {
-            //TODO Connect socket with data transfer
-
-        }
-        else if (command == "quit") {
-            //TODO Connect socket with data transfer
-
-        }
         else if (command == "user") {
-            SOCKET DataSocket;
+            SOCKET DataSocket = BindSocket(ListenSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -570,7 +563,6 @@ void ClientHandler(SOCKET ClientSocket) {
             clenup(buffer, len);
             user.second = "";
             user.first = buffer;
-            //TODO Connect socket with data transfer
             closesocket(DataSocket);
 
         }
@@ -578,8 +570,7 @@ void ClientHandler(SOCKET ClientSocket) {
             //Some Easter eggs
         }
         else if (command == "pwd") {
-            SOCKET DataSocket;
-            //TODO Connect socket with data transfer
+            SOCKET DataSocket  = BindSocket(ListenSocket);
             vector<string> dirs;
             isError = Pwd(directory, dirs, error);
             if (isError) {
@@ -616,8 +607,7 @@ void ClientHandler(SOCKET ClientSocket) {
 
         }
         else if (command == "login") {
-            //TODO Connect socket with data transfer
-            SOCKET DataSocket;
+            SOCKET DataSocket = BindSocket(ListenSocket);
             vector<pair<string, string>> users;
             isError = GetAdmins(users, error);
             if (isError) {
@@ -656,7 +646,7 @@ void ClientHandler(SOCKET ClientSocket) {
 
         }
         else if (command == "password") {
-            SOCKET DataSocket;
+            SOCKET DataSocket = BindSocket(ListenSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -683,12 +673,12 @@ void ClientHandler(SOCKET ClientSocket) {
 
             clenup(buffer, len);
             user.second = buffer;
-            //TODO Connect socket with data transfer
             closesocket(DataSocket);
         }
 
 
     } while (iResult > 0);
+    closesocket(ClientSocket);
 }
 
 int main() {
@@ -752,7 +742,7 @@ int main() {
         WSACleanup();
         return 1;
     }
-    ClientHandler(ClientSocket);
+    ClientHandler(ClientSocket,ListenSocket);
     return 0;
 }
 
