@@ -1,0 +1,22 @@
+
+8	cpp:S1117^"$declaration shadows a local variable(Í²ü
+u	cpp:S5276Ú"Ximplicit conversion loses integer precision: 'std::streamoff' (aka 'long long') to 'int'(¤ÈÃ8Ö««Ëù0
+‹	cpp:S5276Ş"uimplicit conversion loses integer precision: 'std::basic_string<char>::size_type' (aka 'unsigned long long') to 'int'(äÌé
+’	cpp:S5276ı"uimplicit conversion loses integer precision: 'std::basic_string<char>::size_type' (aka 'unsigned long long') to 'int'(äÌé8ˆúÊù0
+’	cpp:S5276€"uimplicit conversion loses integer precision: 'std::basic_string<char>::size_type' (aka 'unsigned long long') to 'int'(ü©É©8éË‘Ìù0
+’	cpp:S5276³"uimplicit conversion loses integer precision: 'std::basic_string<char>::size_type' (aka 'unsigned long long') to 'int'(ü©É©8ã¼ëÌù0
+;	cpp:S1481Î"unused variable 'recvbuf'(ÑôñÔıÿÿÿÿ8âÀ÷Ğù0
+?	cpp:S1481Ï"unused variable 'iSendResult'(Òş“ıúÿÿÿÿ8âÀ÷Ğù0
+>	cpp:S1481Ğ"unused variable 'recvbuflen'(Ü«©İùÿÿÿÿ8âÀ÷Ğù0
+X	cpp:S1238">Pass expensive to copy object "strings" by reference to const.(¦æ¦şÿÿÿÿ
+N	cpp:S6032"9Avoid this unnecessary copy by using a "const" reference.(ü±ì
+\	cpp:S6009”"FReplace this const reference to "std::string" by a "std::string_view".(”ÈâÖ
+a	cpp:S6009²"FReplace this const reference to "std::string" by a "std::string_view".(É‘œÉùÿÿÿÿ
+w	cpp:S3776"URefactor this function to reduce its Cognitive Complexity from 138 to the 25 allowed.(åÖ‚öüÿÿÿÿ8¨‚ËËù0
+icpp:S134Ã"MRefactor this code to not nest more than 3 if|for|do|while|switch statements.(œ¡®²8ÓëĞù0
+icpp:S134Ì"MRefactor this code to not nest more than 3 if|for|do|while|switch statements.(œ¡®²8ÓëĞù0
+icpp:S134ô"MRefactor this code to not nest more than 3 if|for|do|while|switch statements.(œ¡®²8ä›òĞù0
+icpp:S134ı"MRefactor this code to not nest more than 3 if|for|do|while|switch statements.(œ¡®²8ä›òĞù0
+Mcpp:S836M"45th function call argument is an uninitialized value(º°™ıÿÿÿÿ
+D	cpp:S1854‰"(Value stored to 'isBinary' is never read(¢Üœ_8œ¨òĞù0
+J	cpp:S1854Œ"(Value stored to 'isBinary' is never read(ŞŠŒ™úÿÿÿÿ8œ¨òĞù0

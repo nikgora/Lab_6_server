@@ -1,0 +1,8 @@
+
+7	cpp:S1669(""Replace "final" with another name.(®π£κ
+J	cpp:S6022μ"4Use "std::byte" for byte-oriented data manipulation.(ύΘ„…
+O	cpp:S6022ν"4Use "std::byte" for byte-oriented data manipulation.(»οϋ—ψÿÿÿÿ
+O	cpp:S6022ξ"4Use "std::byte" for byte-oriented data manipulation.(Έειόÿÿÿÿ
+J	cpp:S6022ο"4Use "std::byte" for byte-oriented data manipulation.(›γ²Ω
+=	cpp:S1669""Replace "final" with another name.(Ωϊÿÿÿÿÿ
+^	cpp:S5566Έ"CChange this raw for-loop to a range for-loop or an "std::for_each".(΅Δχωÿÿÿÿ
