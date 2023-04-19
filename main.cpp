@@ -332,7 +332,8 @@ void ClientHandler(SOCKET ClientSocket) {
             clenup(buffer, len);
             directory = buffer;
             closesocket(DataSocket);
-        } else if (command == "dir") {
+        }
+        else if (command == "dir") {
             SOCKET DataSocket;
             vector<string> files;
             string filter;
@@ -395,7 +396,8 @@ void ClientHandler(SOCKET ClientSocket) {
             }
             closesocket(DataSocket);
 
-        } else if (command == "put") {
+        }
+        else if (command == "put") {
             SOCKET DataSocket;
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
@@ -468,7 +470,8 @@ void ClientHandler(SOCKET ClientSocket) {
             }
             //TODO Connect socket with data transfer
 
-        } else if (command == "get") {
+        }
+        else if (command == "get") {
             SOCKET DataSocket;
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
@@ -518,21 +521,27 @@ void ClientHandler(SOCKET ClientSocket) {
 
             //TODO Connect socket with data transfer
 
-        } else if (command == "ascii") {
+        }
+        else if (command == "ascii") {
             isBinary = false;
 
-        } else if (command == "binary") {
+        }
+        else if (command == "binary") {
             isBinary = true;
-        } else if (command == "close") {
+        }
+        else if (command == "close") {
             //TODO Connect socket with data transfer
 
-        } else if (command == "open") {
+        }
+        else if (command == "open") {
             //TODO Connect socket with data transfer
 
-        } else if (command == "quit") {
+        }
+        else if (command == "quit") {
             //TODO Connect socket with data transfer
 
-        } else if (command == "user") {
+        }
+        else if (command == "user") {
             SOCKET DataSocket;
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
@@ -564,9 +573,11 @@ void ClientHandler(SOCKET ClientSocket) {
             //TODO Connect socket with data transfer
             closesocket(DataSocket);
 
-        } else if (command == "lcd") {
+        }
+        else if (command == "lcd") {
             //Some Easter eggs
-        } else if (command == "pwd") {
+        }
+        else if (command == "pwd") {
             SOCKET DataSocket;
             //TODO Connect socket with data transfer
             vector<string> dirs;
@@ -603,7 +614,8 @@ void ClientHandler(SOCKET ClientSocket) {
             }
             closesocket(DataSocket);
 
-        } else if (command == "login") {
+        }
+        else if (command == "login") {
             //TODO Connect socket with data transfer
             SOCKET DataSocket;
             vector<pair<string, string>> users;
@@ -642,7 +654,8 @@ void ClientHandler(SOCKET ClientSocket) {
             }
             closesocket(DataSocket);
 
-        } else if (command == "password") {
+        }
+        else if (command == "password") {
             SOCKET DataSocket;
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
