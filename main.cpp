@@ -153,7 +153,7 @@ bool PutBinary(SOCKET socket, string name, const string &second_name, string &er
         return true;
     }
     //get info from socket
-    char *l;
+    char l[DEFAULT_BUFLEN];
     int iResult = recv(socket, l, DEFAULT_BUFLEN, 0);
     int len;
     if (iResult < 0) {
@@ -162,7 +162,7 @@ bool PutBinary(SOCKET socket, string name, const string &second_name, string &er
         return true;
     }
     len = stoi(l);
-    char *res;
+    char res[len];
     iResult = recv(socket, res, len, 0);
     if (iResult < 0) {
         error = "recv failed:\n" + WSAGetLastError();
@@ -183,7 +183,7 @@ bool Put(SOCKET socket, string name, const string &second_name, string &error) {
         return true;
     }
     //get info from socket
-    char *l;
+    char l[DEFAULT_BUFLEN];
     int iResult = recv(socket, l, DEFAULT_BUFLEN, 0);
     int len;
     if (iResult < 0) {
@@ -192,7 +192,7 @@ bool Put(SOCKET socket, string name, const string &second_name, string &error) {
         return true;
     }
     len = stoi(l);
-    char *res;
+    char res[len];
     iResult = recv(socket, res, len, 0);
     if (iResult < 0) {
         error = "recv failed:\n" + WSAGetLastError();
@@ -285,7 +285,6 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
     string directory = "./"; //current directory
     int iResult;
     do {
-        char *buffer;
         int len;
         char ls[DEFAULT_BUFLEN];
         bool isBinary = false;
@@ -300,7 +299,9 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
             isError = false;
             continue;
         }
+
         len = stoi(ls);
+        char buffer[len];
         iResult = recv(ClientSocket, buffer, len, 0);
         if (iResult < 0) {
             error = "recv failed:\n" + WSAGetLastError();
@@ -328,6 +329,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
+            realloc(buffer,len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -360,6 +362,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
+            realloc(buffer,len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -419,6 +422,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
+            realloc(buffer,len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -444,6 +448,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
+            realloc(buffer,len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -492,6 +497,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
+            realloc(buffer,len);
+
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -548,6 +555,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
+            realloc(buffer,len);
+
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -659,6 +668,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
+            realloc(buffer,len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
