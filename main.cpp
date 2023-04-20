@@ -284,10 +284,10 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
     pair<string, string> user;
     string directory = "./"; //current directory
     int iResult;
+    bool isBinary = false;
     do {
         int len;
         char ls[DEFAULT_BUFLEN];
-        bool isBinary = false;
         iResult = recv(ClientSocket, ls, DEFAULT_BUFLEN, 0);
         if (iResult < 0) {
             error = "recv failed:\n" + WSAGetLastError();
