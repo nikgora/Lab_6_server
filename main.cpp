@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 #define DEFAULT_PORT "12"
-#define DEFAULT_BUFLEN 1024
+#define DEFAULT_BUF_LEN 1024
 
 using namespace std;
 
@@ -152,8 +152,8 @@ bool PutBinary(SOCKET socket, string name, const string &second_name, string &er
         return true;
     }
     //get info from socket
-    char l[DEFAULT_BUFLEN];
-    int iResult = recv(socket, l, DEFAULT_BUFLEN, 0);
+    char l[DEFAULT_BUF_LEN];
+    int iResult = recv(socket, l, DEFAULT_BUF_LEN, 0);
     int len;
     if (iResult < 0) {
         error = "recv failed:\n" + WSAGetLastError();
@@ -182,8 +182,8 @@ bool Put(SOCKET socket, string name, const string &second_name, string &error) {
         return true;
     }
     //get info from socket
-    char l[DEFAULT_BUFLEN];
-    int iResult = recv(socket, l, DEFAULT_BUFLEN, 0);
+    char l[DEFAULT_BUF_LEN];
+    int iResult = recv(socket, l, DEFAULT_BUF_LEN, 0);
     int len;
     if (iResult < 0) {
         error = "recv failed:\n" + WSAGetLastError();
@@ -277,7 +277,7 @@ void BindSocket(SOCKET ListenSocket, SOCKET &DataSocket) {
 
 }
 
-void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
+void ClientHandler(SOCKET ClientSocket) {
     vector<pair<string, string>> users;//all registered users
     string error;//message with error if something went wrong
     bool isError = false;
@@ -287,8 +287,8 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
     bool isBinary = false;
     do {
         int len;
-        char ls[DEFAULT_BUFLEN];
-        iResult = recv(ClientSocket, ls, DEFAULT_BUFLEN, 0);
+        char ls[DEFAULT_BUF_LEN];
+        iResult = recv(ClientSocket, ls, DEFAULT_BUF_LEN, 0);
         if (iResult < 0) {
             error = "recv failed:\n" + WSAGetLastError();
             isError = true;
@@ -318,7 +318,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
         if (command == "cd") {
             SOCKET DataSocket;
             BindSocket(ListenSocket, DataSocket);
-            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
                 isError = true;
@@ -352,7 +352,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
             vector<string> files;
             string filter;
             string res;
-            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
                 isError = true;
@@ -385,7 +385,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
                 continue;
             }
             makeACharArr(files, res);
-            iResult = send(DataSocket, to_string(res.length()).c_str(), DEFAULT_BUFLEN, 0);
+            iResult = send(DataSocket, to_string(res.length()).c_str(), DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "send failed:\n" + WSAGetLastError();
                 isError = true;
@@ -413,7 +413,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
         else if (command == "put") {
             SOCKET DataSocket;
             BindSocket(ListenSocket, DataSocket);
-            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
                 isError = true;
@@ -439,7 +439,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
             }
             clenup(buffer, len);
             string name = buffer;
-            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
                 isError = true;
@@ -490,7 +490,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
         else if (command == "get") {
             SOCKET DataSocket;
             BindSocket(ListenSocket, DataSocket);
-            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
                 isError = true;
@@ -550,7 +550,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
         else if (command == "user") {
             SOCKET DataSocket;
             BindSocket(ListenSocket, DataSocket);
-            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
                 isError = true;
@@ -598,7 +598,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
             }
             string res;
             makeACharArr(dirs, res);
-            iResult = send(DataSocket, to_string(res.length()).c_str(), DEFAULT_BUFLEN, 0);
+            iResult = send(DataSocket, to_string(res.length()).c_str(), DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "send failed:\n" + WSAGetLastError();
                 isError = true;
@@ -638,7 +638,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
             if (!isError) {
                 error = "Login successful";
             }
-            iResult = send(DataSocket, to_string(error.length()).c_str(), DEFAULT_BUFLEN, 0);
+            iResult = send(DataSocket, to_string(error.length()).c_str(), DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "send failed:\n" + WSAGetLastError();
                 isError = true;
@@ -666,7 +666,7 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
         else if (command == "password") {
             SOCKET DataSocket;
             BindSocket(ListenSocket, DataSocket);
-            iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
+            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
                 isError = true;
@@ -699,12 +699,52 @@ void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
     } while (iResult > 0);
     closesocket(ClientSocket);
 }
+bool Recive(string& res,SOCKET DataSocket){
+    char ls[DEFAULT_BUF_LEN];
+    int iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
+    if (iResult < 0) {
+        cout << "recv failed:\n" << WSAGetLastError();
+        closesocket(DataSocket);
+        return true;
+    }
+    int len = stoi(ls);
+    char buffer[len];
+    iResult = recv(DataSocket, buffer, len, 0);
+    if (iResult < 0) {
+        cout<<"recv failed:\n" << WSAGetLastError();
+        closesocket(DataSocket);
+        return true;
+
+
+    }
+    clenup(buffer, len);
+    res = buffer;
+    return false;
+}
+bool Send(const string& string, SOCKET DataSocket){
+    int iResult=send(DataSocket,to_string(string.length()).c_str(),DEFAULT_BUF_LEN,0);
+    if (iResult < 0) {
+        cout<< "recv failed:\n" << WSAGetLastError();
+        closesocket(DataSocket);
+        return true;
+    }
+    iResult=send(DataSocket,string.c_str(),string.length(),0);
+    if (iResult < 0) {
+        cout<< "recv failed:\n" << WSAGetLastError();
+        closesocket(DataSocket);
+        return true;
+    }
+    return false;
+}
+
+
+
 
 int main() {
     WSADATA wsaData;
-    char recvbuf[DEFAULT_BUFLEN];
+    char recvbuf[DEFAULT_BUF_LEN];
     int iResult, iSendResult;
-    int recvbuflen = DEFAULT_BUFLEN;
+    int recvbuflen = DEFAULT_BUF_LEN;
 // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
@@ -761,7 +801,7 @@ int main() {
         WSACleanup();
         return 1;
     }
-    ClientHandler(ClientSocket, ListenSocket);
+    ClientHandler(ClientSocket);
     return 0;
 }
 
