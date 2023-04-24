@@ -33,7 +33,6 @@ void makeACharArr(vector<string> strings, string &res) {
     res[res.length() - 1] = '\000';
 }
 
-
 bool GetAdmins(vector<pair<string, string>> &pVector, string &error) {//read all registrated user from file
     ifstream inputFile;
     inputFile.open("../User data.txt");
@@ -264,8 +263,9 @@ bool Get(SOCKET socket, const string &name, string &error) {
     inputFile.close();
     return false;
 }
-void BindSocket(SOCKET ListenSocket,SOCKET &DataSocket){
-    DataSocket= INVALID_SOCKET;
+
+void BindSocket(SOCKET ListenSocket, SOCKET &DataSocket) {
+    DataSocket = INVALID_SOCKET;
     // Accept a client socket
     DataSocket = accept(ListenSocket, NULL, NULL);
     if (DataSocket == INVALID_SOCKET) {
@@ -276,7 +276,8 @@ void BindSocket(SOCKET ListenSocket,SOCKET &DataSocket){
     }
 
 }
-void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
+
+void ClientHandler(SOCKET ClientSocket, SOCKET ListenSocket) {
     vector<pair<string, string>> users;//all registered users
     string error;//message with error if something went wrong
     bool isError = false;
@@ -316,7 +317,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
         string command = buffer;
         if (command == "cd") {
             SOCKET DataSocket;
-            BindSocket(ListenSocket,DataSocket);
+            BindSocket(ListenSocket, DataSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -329,7 +330,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
-            realloc(buffer,len);
+            realloc(buffer, len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -346,8 +347,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
             closesocket(DataSocket);
         }
         else if (command == "dir") {
-                        SOCKET DataSocket;
-            BindSocket(ListenSocket,DataSocket);
+            SOCKET DataSocket;
+            BindSocket(ListenSocket, DataSocket);
             vector<string> files;
             string filter;
             string res;
@@ -363,7 +364,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
-            realloc(buffer,len);
+            realloc(buffer, len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -410,8 +411,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
 
         }
         else if (command == "put") {
-                        SOCKET DataSocket;
-            BindSocket(ListenSocket,DataSocket);
+            SOCKET DataSocket;
+            BindSocket(ListenSocket, DataSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -424,7 +425,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
-            realloc(buffer,len);
+            realloc(buffer, len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -450,7 +451,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
-            realloc(buffer,len);
+            realloc(buffer, len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -473,7 +474,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                     continue;
                 }
                 closesocket(DataSocket);
-            } else {
+            }
+            else {
                 isError = PutBinary(DataSocket, name, localName, error);
                 if (isError) {
                     cout << error << endl;
@@ -486,8 +488,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
 
         }
         else if (command == "get") {
-                        SOCKET DataSocket;
-            BindSocket(ListenSocket,DataSocket);
+            SOCKET DataSocket;
+            BindSocket(ListenSocket, DataSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -500,7 +502,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
-            realloc(buffer,len);
+            realloc(buffer, len);
 
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
@@ -525,7 +527,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                     continue;
                 }
                 closesocket(DataSocket);
-            } else {
+            }
+            else {
                 isError = GetBinary(DataSocket, name, error);
                 if (isError) {
                     cout << error << endl;
@@ -546,7 +549,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
         }
         else if (command == "user") {
             SOCKET DataSocket;
-            BindSocket(ListenSocket,DataSocket);
+            BindSocket(ListenSocket, DataSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -559,7 +562,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
-            realloc(buffer,len);
+            realloc(buffer, len);
 
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
@@ -583,8 +586,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
             //Some Easter eggs
         }
         else if (command == "pwd") {
-                        SOCKET DataSocket;
-            BindSocket(ListenSocket,DataSocket);
+            SOCKET DataSocket;
+            BindSocket(ListenSocket, DataSocket);
             vector<string> dirs;
             isError = Pwd(directory, dirs, error);
             if (isError) {
@@ -621,8 +624,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
 
         }
         else if (command == "login") {
-                        SOCKET DataSocket;
-            BindSocket(ListenSocket,DataSocket);
+            SOCKET DataSocket;
+            BindSocket(ListenSocket, DataSocket);
             vector<pair<string, string>> users;
             isError = GetAdmins(users, error);
             if (isError) {
@@ -661,8 +664,8 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
 
         }
         else if (command == "password") {
-                        SOCKET DataSocket;
-            BindSocket(ListenSocket,DataSocket);
+            SOCKET DataSocket;
+            BindSocket(ListenSocket, DataSocket);
             iResult = recv(DataSocket, ls, DEFAULT_BUFLEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -675,7 +678,7 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
                 continue;
             }
             len = stoi(ls);
-            realloc(buffer,len);
+            realloc(buffer, len);
             iResult = recv(DataSocket, buffer, len, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -692,7 +695,6 @@ void ClientHandler(SOCKET ClientSocket,SOCKET ListenSocket) {
             user.second = buffer;
             closesocket(DataSocket);
         }
-
 
     } while (iResult > 0);
     closesocket(ClientSocket);
@@ -759,7 +761,7 @@ int main() {
         WSACleanup();
         return 1;
     }
-    ClientHandler(ClientSocket,ListenSocket);
+    ClientHandler(ClientSocket, ListenSocket);
     return 0;
 }
 
