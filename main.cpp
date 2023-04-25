@@ -71,11 +71,11 @@ bool Dir(string dir_path, string &filter, vector<string> &files, string &error) 
     struct dirent *ent;
     struct stat st;
     char file_path[PATH_MAX];
-    snprintf(file_path, PATH_MAX, "%s%s", dir_path.c_str(), ent->d_name);
     if (dir_path[dir_path.length() - 1] != '/') {
         error = "You don't enter a directory";
         return true;
     }
+    //snprintf(file_path, PATH_MAX, "%s%s", dir_path.c_str(), ent->d_name);
     dir = opendir(dir_path.c_str());
     if (dir == NULL) {
         error = "Error opening directory";
@@ -597,9 +597,31 @@ void ClientHandler(SOCKET &ClientSocket) {
             isBinary = true;
         }
         else if (command == "user" && isOpen) {
-            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
+            vector<pair<string, string>> users;
+            isError = GetAdmins(users, error);
+            if (isError) {
+                cout << error << endl;
+                isError = false;
+                continue;
+            }
+            string us, pas;
+            if (Recive(us, DataSocket)) {
+                iResult = -1;
+                continue;
+            }
+            if (Recive(pas, DataSocket)) {
+                iResult = -1;
+                continue;
+            }
+            user.first = us;
+            user.second = pas;
+            isError = isUserValid(users, user, error);
+            if (!isError) {
+                error = "Login successful";
+            }
+            iResult = send(DataSocket, to_string(error.length()).c_str(), DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
-                error = "recv failed:\n" + WSAGetLastError();
+                error = "send failed:\n" + WSAGetLastError();
                 isError = true;
                 closesocket(DataSocket);
             }
@@ -608,12 +630,9 @@ void ClientHandler(SOCKET &ClientSocket) {
                 isError = false;
                 continue;
             }
-            len = stoi(ls);
-            realloc(buffer, len);
-
-            iResult = recv(DataSocket, buffer, len, 0);
+            iResult = send(DataSocket, error.c_str(), error.length(), 0);
             if (iResult < 0) {
-                error = "recv failed:\n" + WSAGetLastError();
+                error = "send failed:\n" + WSAGetLastError();
                 isError = true;
                 closesocket(DataSocket);
             }
@@ -623,9 +642,6 @@ void ClientHandler(SOCKET &ClientSocket) {
                 continue;
             }
 
-            clenup(buffer, len);
-            user.second = "";
-            user.first = buffer;
         }
         else if (command == "lcd" && isOpen) {
             //Some Easter eggs
