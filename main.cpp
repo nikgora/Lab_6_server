@@ -135,8 +135,8 @@ bool Pwd(string dir_path, vector<string> &dirs, string &error) {//get all files 
 
 bool isUserValid(const vector<pair<string, string>> &admins, const pair<string, string> &user,
                  string &error) {//get all users that registrated and check with user that are trying to login
-    for (const auto &item: admins) {
-        if (item == user)return true;
+    for (pair<string, string > item: admins) {
+        if (item.first== user.first && item.second==user.second)return true;
     }
     error = "Username/password is incorrect";
     return false;
@@ -309,38 +309,13 @@ void ClientHandler(SOCKET &ClientSocket) {
     int iResult = 0;
     bool isBinary = false;
     bool isOpen = false;
+    string command;
     SOCKET DataSocket = INVALID_SOCKET;
     do {
-        int len;
-        char ls[DEFAULT_BUF_LEN];
-        iResult = recv(ClientSocket, ls, DEFAULT_BUF_LEN, 0);
-        if (iResult < 0) {
-            error = "recv failed:\n" + WSAGetLastError();
-            isError = true;
-            closesocket(ClientSocket);
-        }
-        if (isError) {
-            cout << error << endl;
-            isError = false;
+        if(Recive(command,ClientSocket)){
+            iResult = -1;
             continue;
         }
-
-        len = stoi(ls);
-        char buffer[len];
-        iResult = recv(ClientSocket, buffer, len, 0);
-        if (iResult < 0) {
-            clenup(buffer, len);
-            error = "recv failed:\n" + WSAGetLastError();
-            isError = true;
-            closesocket(ClientSocket);
-        }
-        if (isError) {
-            cout << error << endl;
-            isError = false;
-            continue;
-        }
-        clenup(buffer, len);
-        string command = buffer;
         cout << command << endl;
         if (command == "cd" && isOpen) {
             if (Recive(directory, DataSocket)) {
@@ -474,13 +449,13 @@ void ClientHandler(SOCKET &ClientSocket) {
             }
             user.first = us;
             user.second = pas;
-            isError = isUserValid(users, user, error);
+            isError = !isUserValid(users, user, error);
             if (!isError) {
                 error = "Login successful";
             }
 
             if (Send(error, DataSocket)) {
-                iResult = 1;
+                iResult = -1;
                 continue;
             }
 
