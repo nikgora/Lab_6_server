@@ -8,7 +8,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#define DEFAULT_PORT "12"
 #define DEFAULT_BUF_LEN 1024
 
 using namespace std;
@@ -203,6 +202,44 @@ bool Put(SOCKET socket, string name, const string &second_name, string &error) {
     return false;
 }
 
+bool Recive(string &res, SOCKET DataSocket) {
+    char ls[DEFAULT_BUF_LEN];
+    int iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
+    if (iResult < 0) {
+        cout << "recv failed:\n" << WSAGetLastError();
+        closesocket(DataSocket);
+        return true;
+    }
+    int len = stoi(ls);
+    char buffer[len];
+    iResult = recv(DataSocket, buffer, len, 0);
+    if (iResult < 0) {
+        cout << "recv failed:\n" << WSAGetLastError();
+        closesocket(DataSocket);
+        return true;
+
+    }
+    clenup(buffer, len);
+    res = buffer;
+    return false;
+}
+
+bool Send(const string &string, SOCKET DataSocket) {
+    int iResult = send(DataSocket, to_string(string.length()).c_str(), DEFAULT_BUF_LEN, 0);
+    if (iResult < 0) {
+        cout << "recv failed:\n" << WSAGetLastError();
+        closesocket(DataSocket);
+        return true;
+    }
+    iResult = send(DataSocket, string.c_str(), string.length(), 0);
+    if (iResult < 0) {
+        cout << "recv failed:\n" << WSAGetLastError();
+        closesocket(DataSocket);
+        return true;
+    }
+    return false;
+}
+
 bool GetBinary(SOCKET socket, const string &name, string &error) {
     ifstream inputFile;
     inputFile.open(name, ios::binary);
@@ -264,27 +301,69 @@ bool Get(SOCKET socket, const string &name, string &error) {
     return false;
 }
 
-void BindSocket(SOCKET ListenSocket, SOCKET &DataSocket) {
-    DataSocket = INVALID_SOCKET;
+bool BindSocket(SOCKET &DataSocket, const string &port) {
+
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_flags = AI_PASSIVE;
+// Resolve the local address and port to be used by the server
+    int iResult = getaddrinfo(NULL, port.c_str(), &hints, &result);
+    if (iResult != 0) {
+        printf("getaddrinfo failed: %d\n", iResult);
+        WSACleanup();
+        return true;
+    }
+    SOCKET ListenSocket = INVALID_SOCKET;
+
+    // Create a SOCKET for the server to listen for client connections
+    ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    if (ListenSocket == INVALID_SOCKET) {
+        printf("Error at socket(): %ld\n", WSAGetLastError());
+        freeaddrinfo(result);
+        WSACleanup();
+        return true;
+    }
+
+    // Set up the TCP listening socket
+    iResult = bind(ListenSocket, result->ai_addr, (int) result->ai_addrlen);
+    if (iResult == SOCKET_ERROR) {
+        printf("bind failed with error: %d\n", WSAGetLastError());
+        freeaddrinfo(result);
+        closesocket(ListenSocket);
+        WSACleanup();
+        return true;
+    }
+    if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
+        printf("Listen failed with error: %ld\n", WSAGetLastError());
+        closesocket(ListenSocket);
+        WSACleanup();
+        return true;
+    }
+
     // Accept a client socket
     DataSocket = accept(ListenSocket, NULL, NULL);
     if (DataSocket == INVALID_SOCKET) {
         printf("accept failed: %d\n", WSAGetLastError());
         closesocket(ListenSocket);
         WSACleanup();
-        return;
+        return true;
     }
+    return false;
 
 }
 
-void ClientHandler(SOCKET ClientSocket) {
+void ClientHandler(SOCKET &ClientSocket) {
     vector<pair<string, string>> users;//all registered users
     string error;//message with error if something went wrong
     bool isError = false;
     pair<string, string> user;
     string directory = "./"; //current directory
-    int iResult;
+    int iResult = 0;
     bool isBinary = false;
+    bool isOpen = false;
+    SOCKET DataSocket = INVALID_SOCKET;
     do {
         int len;
         char ls[DEFAULT_BUF_LEN];
@@ -304,6 +383,7 @@ void ClientHandler(SOCKET ClientSocket) {
         char buffer[len];
         iResult = recv(ClientSocket, buffer, len, 0);
         if (iResult < 0) {
+            clenup(buffer, len);
             error = "recv failed:\n" + WSAGetLastError();
             isError = true;
             closesocket(ClientSocket);
@@ -315,9 +395,8 @@ void ClientHandler(SOCKET ClientSocket) {
         }
         clenup(buffer, len);
         string command = buffer;
-        if (command == "cd") {
-            SOCKET DataSocket;
-            BindSocket(ListenSocket, DataSocket);
+        cout << command << endl;
+        if (command == "cd" && isOpen) {
             iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -344,39 +423,16 @@ void ClientHandler(SOCKET ClientSocket) {
             }
             clenup(buffer, len);
             directory = buffer;
-            closesocket(DataSocket);
         }
-        else if (command == "dir") {
-            SOCKET DataSocket;
-            BindSocket(ListenSocket, DataSocket);
+        else if (command == "dir" && isOpen) {
+
             vector<string> files;
             string filter;
             string res;
-            iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
-            if (iResult < 0) {
-                error = "recv failed:\n" + WSAGetLastError();
-                isError = true;
-                closesocket(DataSocket);
-            }
-            if (isError) {
-                cout << error << endl;
-                isError = false;
+            if (Recive(filter, DataSocket)) {
+                iResult = -1;
                 continue;
             }
-            len = stoi(ls);
-            realloc(buffer, len);
-            iResult = recv(DataSocket, buffer, len, 0);
-            if (iResult < 0) {
-                error = "recv failed:\n" + WSAGetLastError();
-                isError = true;
-                closesocket(DataSocket);
-            }
-            if (isError) {
-                cout << error << endl;
-                isError = false;
-                continue;
-            }
-            filter = buffer;
             isError = Dir(directory, filter, files, error);
             if (isError) {
                 cout << error << endl;
@@ -407,12 +463,9 @@ void ClientHandler(SOCKET ClientSocket) {
                 isError = false;
                 continue;
             }
-            closesocket(DataSocket);
 
         }
-        else if (command == "put") {
-            SOCKET DataSocket;
-            BindSocket(ListenSocket, DataSocket);
+        else if (command == "put" && isOpen) {
             iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -473,7 +526,6 @@ void ClientHandler(SOCKET ClientSocket) {
                     isError = false;
                     continue;
                 }
-                closesocket(DataSocket);
             }
             else {
                 isError = PutBinary(DataSocket, name, localName, error);
@@ -483,13 +535,11 @@ void ClientHandler(SOCKET ClientSocket) {
                     isError = false;
                     continue;
                 }
-                closesocket(DataSocket);
             }
 
         }
-        else if (command == "get") {
-            SOCKET DataSocket;
-            BindSocket(ListenSocket, DataSocket);
+        else if (command == "get" && isOpen) {
+
             iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -536,20 +586,17 @@ void ClientHandler(SOCKET ClientSocket) {
                     closesocket(DataSocket);
                     continue;
                 }
-                closesocket(DataSocket);
             }
 
         }
-        else if (command == "ascii") {
+        else if (command == "ascii" && isOpen) {
             isBinary = false;
 
         }
-        else if (command == "binary") {
+        else if (command == "binary" && isOpen) {
             isBinary = true;
         }
-        else if (command == "user") {
-            SOCKET DataSocket;
-            BindSocket(ListenSocket, DataSocket);
+        else if (command == "user" && isOpen) {
             iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -579,15 +626,11 @@ void ClientHandler(SOCKET ClientSocket) {
             clenup(buffer, len);
             user.second = "";
             user.first = buffer;
-            closesocket(DataSocket);
-
         }
-        else if (command == "lcd") {
+        else if (command == "lcd" && isOpen) {
             //Some Easter eggs
         }
-        else if (command == "pwd") {
-            SOCKET DataSocket;
-            BindSocket(ListenSocket, DataSocket);
+        else if (command == "pwd" && isOpen) {
             vector<string> dirs;
             isError = Pwd(directory, dirs, error);
             if (isError) {
@@ -620,20 +663,27 @@ void ClientHandler(SOCKET ClientSocket) {
                 isError = false;
                 continue;
             }
-            closesocket(DataSocket);
 
         }
-        else if (command == "login") {
-            SOCKET DataSocket;
-            BindSocket(ListenSocket, DataSocket);
+        else if (command == "login" && isOpen) {
             vector<pair<string, string>> users;
             isError = GetAdmins(users, error);
             if (isError) {
                 cout << error << endl;
                 isError = false;
-                closesocket(DataSocket);
                 continue;
             }
+            string us, pas;
+            if (Recive(us, DataSocket)) {
+                iResult = -1;
+                continue;
+            }
+            if (Recive(pas, DataSocket)) {
+                iResult = -1;
+                continue;
+            }
+            user.first = us;
+            user.second = pas;
             isError = isUserValid(users, user, error);
             if (!isError) {
                 error = "Login successful";
@@ -660,12 +710,10 @@ void ClientHandler(SOCKET ClientSocket) {
                 isError = false;
                 continue;
             }
-            closesocket(DataSocket);
 
         }
-        else if (command == "password") {
-            SOCKET DataSocket;
-            BindSocket(ListenSocket, DataSocket);
+        else if (command == "password" && isOpen) {
+
             iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
             if (iResult < 0) {
                 error = "recv failed:\n" + WSAGetLastError();
@@ -693,52 +741,17 @@ void ClientHandler(SOCKET ClientSocket) {
 
             clenup(buffer, len);
             user.second = buffer;
-            closesocket(DataSocket);
         }
-
-    } while (iResult > 0);
+        else if (command == "open") {
+            if (BindSocket(DataSocket, "13")) {
+                iResult = -1;
+                continue;
+            }
+            isOpen = true;
+        }
+    } while (iResult >= 0);
     closesocket(ClientSocket);
 }
-bool Recive(string& res,SOCKET DataSocket){
-    char ls[DEFAULT_BUF_LEN];
-    int iResult = recv(DataSocket, ls, DEFAULT_BUF_LEN, 0);
-    if (iResult < 0) {
-        cout << "recv failed:\n" << WSAGetLastError();
-        closesocket(DataSocket);
-        return true;
-    }
-    int len = stoi(ls);
-    char buffer[len];
-    iResult = recv(DataSocket, buffer, len, 0);
-    if (iResult < 0) {
-        cout<<"recv failed:\n" << WSAGetLastError();
-        closesocket(DataSocket);
-        return true;
-
-
-    }
-    clenup(buffer, len);
-    res = buffer;
-    return false;
-}
-bool Send(const string& string, SOCKET DataSocket){
-    int iResult=send(DataSocket,to_string(string.length()).c_str(),DEFAULT_BUF_LEN,0);
-    if (iResult < 0) {
-        cout<< "recv failed:\n" << WSAGetLastError();
-        closesocket(DataSocket);
-        return true;
-    }
-    iResult=send(DataSocket,string.c_str(),string.length(),0);
-    if (iResult < 0) {
-        cout<< "recv failed:\n" << WSAGetLastError();
-        closesocket(DataSocket);
-        return true;
-    }
-    return false;
-}
-
-
-
 
 int main() {
     WSADATA wsaData;
@@ -752,55 +765,8 @@ int main() {
         return 1;
 
     }
-
-    ZeroMemory(&hints, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags = AI_PASSIVE;
-// Resolve the local address and port to be used by the server
-    iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-    if (iResult != 0) {
-        printf("getaddrinfo failed: %d\n", iResult);
-        WSACleanup();
-        return 1;
-    }
-    SOCKET ListenSocket = INVALID_SOCKET;
-
-    // Create a SOCKET for the server to listen for client connections
-    ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-    if (ListenSocket == INVALID_SOCKET) {
-        printf("Error at socket(): %ld\n", WSAGetLastError());
-        freeaddrinfo(result);
-        WSACleanup();
-        return 1;
-    }
-
-    // Set up the TCP listening socket
-    iResult = bind(ListenSocket, result->ai_addr, (int) result->ai_addrlen);
-    if (iResult == SOCKET_ERROR) {
-        printf("bind failed with error: %d\n", WSAGetLastError());
-        freeaddrinfo(result);
-        closesocket(ListenSocket);
-        WSACleanup();
-        return 1;
-    }
-    if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
-        printf("Listen failed with error: %ld\n", WSAGetLastError());
-        closesocket(ListenSocket);
-        WSACleanup();
-        return 1;
-    }
-
     SOCKET ClientSocket = INVALID_SOCKET;
-    // Accept a client socket
-    ClientSocket = accept(ListenSocket, NULL, NULL);
-    if (ClientSocket == INVALID_SOCKET) {
-        printf("accept failed: %d\n", WSAGetLastError());
-        closesocket(ListenSocket);
-        WSACleanup();
-        return 1;
-    }
+    if (BindSocket(ClientSocket, "12"))return 1;
     ClientHandler(ClientSocket);
     return 0;
 }
