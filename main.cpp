@@ -224,12 +224,13 @@ bool PutBinary(SOCKET socket, const string &name, string &error) {
         return true;
     }
     //get info from socket
-    char *l;
+
     inputFile.seekg(0, ios::end);
     int len = inputFile.tellg();
     inputFile.seekg(0, ios::beg);
-
+    char l[len];
     inputFile.read(l, len);
+    clenup(l,len);
     if (Send(l, socket))return true;
     inputFile.close();
     return false;
@@ -386,7 +387,6 @@ void ClientHandler(SOCKET &ClientSocket) {
 
         }
         else if (command == "get" && isOpen) {
-
             string name;
             if (Recive(name, DataSocket)) {
                 iResult = -1;
