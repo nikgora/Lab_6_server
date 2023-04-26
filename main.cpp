@@ -135,8 +135,13 @@ bool Pwd(string dir_path, vector<string> &dirs, string &error) {//get all files 
 
 bool isUserValid(const vector<pair<string, string>> &admins, const pair<string, string> &user,
                  string &error) {//get all users that registrated and check with user that are trying to login
-    for (pair<string, string > item: admins) {
-        if (item.first== user.first && item.second==user.second)return true;
+    string userFirst = user.first;
+    string userSecond = user.second;
+    for (pair<string, string> item: admins) {
+        string itemFirst = item.first;
+        string itemSecond = item.second;
+
+        if (itemFirst == userFirst && itemSecond == userSecond)return true;
     }
     error = "Username/password is incorrect";
     return false;
@@ -312,7 +317,7 @@ void ClientHandler(SOCKET &ClientSocket) {
     string command;
     SOCKET DataSocket = INVALID_SOCKET;
     do {
-        if(Recive(command,ClientSocket)){
+        if (Recive(command, ClientSocket)) {
             iResult = -1;
             continue;
         }
@@ -432,7 +437,7 @@ void ClientHandler(SOCKET &ClientSocket) {
         }
         else if ((command == "login" || command == "user") && isOpen) {
             vector<pair<string, string>> users;
-            isError = GetAdmins(users, error);
+            isError = GetAdmins(users, error);//get list of all users include anonym
             if (isError) {
                 cout << error << endl;
                 isError = false;
@@ -443,11 +448,11 @@ void ClientHandler(SOCKET &ClientSocket) {
                 iResult = -1;
                 continue;
             }
+            user.first = us;
             if (Recive(pas, DataSocket)) {
                 iResult = -1;
                 continue;
             }
-            user.first = us;
             user.second = pas;
             isError = !isUserValid(users, user, error);
             if (!isError) {
