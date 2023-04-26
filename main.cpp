@@ -202,14 +202,15 @@ bool GetBinary(SOCKET socket, string name, const string &second_name, string &er
 
 bool Get(SOCKET socket, string name, const string &second_name, string &error) {
     if (!second_name.empty())name = second_name;
+    string res;
+    if (Recive(res, socket))return true;
     ofstream outputFile;
     outputFile.open(name);
     if (!outputFile) {
         error = "Error opening file.";
         return true;
     }
-    string res;
-    if (Recive(res, socket))return true;
+
     outputFile.write(res.c_str(), res.length());
     outputFile.close();
     return false;
@@ -247,8 +248,8 @@ bool Put(SOCKET socket, const string &name, string &error) {
     while (std::getline(inputFile, line)) {
         l += line + "\n";
     }
-    if (Send(l, socket))return true;
     inputFile.close();
+    if (Send(l, socket))return true;
     return false;
 }
 
@@ -301,6 +302,7 @@ bool BindSocket(SOCKET &DataSocket, const string &port) {
         WSACleanup();
         return true;
     }
+    closesocket(ListenSocket);
     return false;
 
 }
@@ -505,7 +507,7 @@ void ClientHandler(SOCKET &ClientSocket) {
             isOpen = true;
         }
         else if (command == "close" && isOpen) {
-            closesocket(DataSocket);
+            if(isOpen)closesocket(DataSocket);
             isBinary = false;
             isOpen = false;
         }
