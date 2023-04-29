@@ -307,7 +307,22 @@ bool BindSocket(SOCKET &DataSocket, const string &port) {
     return false;
 
 }
+bool System(string &res, string& error){
+    FILE* pipe = popen("systeminfo", "r");
+    if (!pipe) {
+        error = "Failed to open pipe";
+        return true;
+    }
 
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        res += buffer;
+    }
+
+    pclose(pipe);
+
+    return false;
+}
 void ClientHandler(SOCKET &ClientSocket) {
     vector<pair<string, string>> users;//all registered users
     string error;//message with error if something went wrong
@@ -319,6 +334,7 @@ void ClientHandler(SOCKET &ClientSocket) {
     bool isOpen = false;
     string command;
     SOCKET DataSocket = INVALID_SOCKET;
+    bool isPrompt = false;
     do {
         if (Recive(command, ClientSocket)) {
             iResult = -1;
@@ -419,6 +435,7 @@ void ClientHandler(SOCKET &ClientSocket) {
         else if (command == "binary" && isOpen) {
             isBinary = true;
         }
+
         else if (command == "pwd" && isOpen) {
             vector<string> dirs;
             isError = Pwd(directory, dirs, error);
@@ -467,6 +484,20 @@ void ClientHandler(SOCKET &ClientSocket) {
             }
 
         }
+        else if (command=="system" && isOpen){
+            string res;
+
+            if(System(res,error)){
+                iResult=-1;
+                cout<<error;
+                continue;
+            }
+
+            if (Send(res,DataSocket)){
+                iResult=-1;
+                continue;
+            }
+        }
             /*
             else if (command == "password" && isOpen) {
 
@@ -509,13 +540,117 @@ void ClientHandler(SOCKET &ClientSocket) {
         else if (command == "close" && isOpen) {
             if(isOpen)closesocket(DataSocket);
             isBinary = false;
+            isPrompt= false;
             isOpen = false;
         }
-        else if (command == "quit" && isOpen) {
-            closesocket(DataSocket);
+        else if (command == "quit" ) {
+            if (isOpen)closesocket(DataSocket);
             isBinary = false;
             isOpen = false;
             iResult = -1;
+        }
+        else if (command=="mget"){
+
+            vector<string> files;
+            string filter;
+            string res;
+            if (Recive(filter,DataSocket)){
+                iResult=-1;
+                continue;
+            }
+            isError = Dir(directory, filter, files, error);
+            if (isError) {
+                cout << error << endl;
+                closesocket(DataSocket);
+                isError = false;
+                continue;
+            }
+            makeACharArr(files, res);
+            if (Send(res, DataSocket)) {
+                iResult = -1;
+                continue;
+            }
+            string end;
+            if(Recive(end,DataSocket)){
+                iResult=-1;
+                end="end";
+                continue;
+            }
+            string name;
+            while(end!="end"){
+                if(Recive(name,DataSocket)){
+                    iResult=-1;
+                    end="end";
+                    continue;
+                }
+                if (isBinary) {
+                    isError = PutBinary(DataSocket, name, error);
+                    if (isError) {
+                        cout << error << endl;
+                        closesocket(DataSocket);
+                        isError = false;
+                        iResult = -1;
+                        break;
+                    }
+                }
+                else {
+                    isError = Put(DataSocket, name, error);
+                    if (isError) {
+                        cout << error << endl;
+                        closesocket(DataSocket);
+                        isError = false;
+                        iResult = -1;
+                        break;
+                    }
+                }
+                if(Recive(end,DataSocket)){
+                    iResult=-1;
+                    end="end";
+                    continue;
+                }
+            }
+        }
+        else if (command=="mput"){
+            string end;
+            if(Recive(end,DataSocket)){
+                iResult=-1;
+                end="end";
+                continue;
+            }
+            string name;
+            while(end!="end"){
+                if(Recive(name,DataSocket)){
+                    iResult=-1;
+                    end="end";
+                    continue;
+                }
+                cout<<name;
+                if (isBinary) {
+                    isError = GetBinary(DataSocket, name,"", error);
+                    if (isError) {
+                        cout << error << endl;
+                        closesocket(DataSocket);
+                        isError = false;
+                        iResult = -1;
+                        break;
+                    }
+                }
+                else {
+                    isError = Get(DataSocket, name,"", error);
+                    if (isError) {
+                        cout << error << endl;
+                        closesocket(DataSocket);
+                        isError = false;
+                        iResult = -1;
+                        break;
+                    }
+                }
+                if(Recive(end,DataSocket)){
+                    iResult=-1;
+                    end="end";
+                    continue;
+                }
+            }
         }
     } while (iResult >= 0);
     closesocket(ClientSocket);
