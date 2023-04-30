@@ -452,6 +452,13 @@ void ClientHandler(SOCKET &ClientSocket) {
                 iResult = -1;
                 continue;
             }
+            /*
+            if (Send(directory, DataSocket)) {
+                iResult = -1;
+                continue;
+            }
+
+             */
 
         }
         else if ((command == "login" || command == "user") && isOpen) {
