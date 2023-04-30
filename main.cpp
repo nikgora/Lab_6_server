@@ -624,7 +624,6 @@ void ClientHandler(SOCKET &ClientSocket) {
                     end="end";
                     continue;
                 }
-                cout<<name;
                 if (isBinary) {
                     isError = GetBinary(DataSocket, name,"", error);
                     if (isError) {
