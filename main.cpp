@@ -539,6 +539,7 @@ void ClientHandler(SOCKET &ClientSocket) {
         }
         else if (command == "close" && isOpen) {
             if(isOpen)closesocket(DataSocket);
+            directory="./";
             isBinary = false;
             isPrompt= false;
             isOpen = false;
