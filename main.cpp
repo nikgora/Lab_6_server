@@ -437,7 +437,7 @@ void ClientHandler(SOCKET &ClientSocket) {
         }
 
         else if (command == "pwd" && isOpen) {
-            vector<string> dirs;
+            /*vector<string> dirs;
             isError = Pwd(directory, dirs, error);
             if (isError) {
                 closesocket(DataSocket);
@@ -451,14 +451,13 @@ void ClientHandler(SOCKET &ClientSocket) {
             if (Send(res, DataSocket)) {
                 iResult = -1;
                 continue;
-            }
-            /*
+            }*/
+
             if (Send(directory, DataSocket)) {
                 iResult = -1;
                 continue;
             }
 
-             */
 
         }
         else if ((command == "login" || command == "user") && isOpen) {
